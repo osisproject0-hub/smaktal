@@ -23,6 +23,7 @@ import { collection, doc, query, orderBy, limit } from 'firebase/firestore';
 import { Crown } from 'lucide-react';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
+import React from 'react';
 
 function DashboardCardSkeleton() {
   return (
@@ -66,6 +67,7 @@ export default function DashboardOverviewPage() {
   const { user } = useUser();
   const firestore = useFirestore();
 
+  // Data fetching
   const userProfileRef = useMemoFirebase(() => user ? doc(firestore, `users/${user.uid}/profile`, user.uid) : null, [user, firestore]);
   const { data: userProfile, isLoading: isUserProfileLoading } = useDoc(userProfileRef);
 
@@ -74,17 +76,49 @@ export default function DashboardOverviewPage() {
   
   const leaderboardQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('points', 'desc'), limit(5)) : null, [firestore]);
   const { data: leaderboard, isLoading: isLeaderboardLoading } = useCollection(leaderboardQuery);
-
-  const userHouse = sortedHouses?.find((h) => h.id === userProfile?.houseId);
   
-  const userRank = leaderboard?.findIndex((s) => s.id === user?.uid) + 1;
+  const skillTiersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'skillTrees/tkj/tiers') : null, [firestore]);
+  const { data: skillTiers, isLoading: areTiersLoading } = useCollection(skillTiersQuery);
 
   const houses = useCollection(useMemoFirebase(() => firestore ? collection(firestore, 'houses') : null, [firestore])).data;
+
+  // Derived state and calculations
+  const { majorProgress, certificatesEarned } = React.useMemo(() => {
+    if (!skillTiers || !userProfile) {
+      return { majorProgress: 0, certificatesEarned: 0 };
+    }
+
+    const unlockedSkills = new Set(userProfile.unlockedSkills || []);
+    let totalSkills = 0;
+    let certificates = 0;
+
+    skillTiers.forEach((tier: any) => {
+      const skillsInTier: any[] = tier.skills || [];
+      totalSkills += skillsInTier.length;
+      
+      const allSkillsInTierUnlocked = skillsInTier.every(skill => unlockedSkills.has(skill.id));
+      if (allSkillsInTierUnlocked && skillsInTier.length > 0) {
+        certificates++;
+      }
+    });
+
+    const progress = totalSkills > 0 ? (unlockedSkills.size / totalSkills) * 100 : 0;
+    
+    return {
+      majorProgress: Math.round(progress),
+      certificatesEarned: certificates
+    };
+  }, [skillTiers, userProfile]);
+
+  const isLoading = isUserProfileLoading || areHousesLoading || isLeaderboardLoading || areTiersLoading;
+  
+  const userHouse = sortedHouses?.find((h) => h.id === userProfile?.houseId);
+  const userRank = leaderboard?.findIndex((s) => s.id === user?.uid) + 1;
 
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:col-span-2 lg:grid-cols-2 xl:col-span-3 xl:grid-cols-4">
-        {isUserProfileLoading ? <DashboardCardSkeleton /> : (
+        {isLoading ? <DashboardCardSkeleton /> : (
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Poin Saya</CardDescription>
@@ -97,7 +131,7 @@ export default function DashboardOverviewPage() {
             </CardContent>
           </Card>
         )}
-        {(isUserProfileLoading || areHousesLoading) ? <DashboardCardSkeleton /> : (
+        {isLoading ? <DashboardCardSkeleton /> : (
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Rumah Saya</CardDescription>
@@ -112,24 +146,28 @@ export default function DashboardOverviewPage() {
             </CardContent>
           </Card>
         )}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Progress Jurusan</CardDescription>
-            <CardTitle className="font-headline text-4xl">45%</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={45} aria-label="45% progress" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Sertifikat Diraih</CardDescription>
-            <CardTitle className="font-headline text-4xl">3</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">2 dalam progress</div>
-          </CardContent>
-        </Card>
+        {isLoading ? <DashboardCardSkeleton /> : (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Progress Jurusan</CardDescription>
+              <CardTitle className="font-headline text-4xl">{majorProgress}%</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Progress value={majorProgress} aria-label={`${majorProgress}% progress`} />
+            </CardContent>
+          </Card>
+        )}
+        {isLoading ? <DashboardCardSkeleton /> : (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Sertifikat Diraih</CardDescription>
+              <CardTitle className="font-headline text-4xl">{certificatesEarned}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xs text-muted-foreground">dari {skillTiers?.length || 0} tingkatan</div>
+            </CardContent>
+          </Card>
+        )}
       </div>
       <div className="grid gap-4">
         <Card>
