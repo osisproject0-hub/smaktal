@@ -64,7 +64,7 @@ export default function AnnouncementManagementPanel() {
     }, [editingAnnouncement, form, dialogOpen]);
 
 
-    const onSubmit: SubmitHandler<AnnouncementFormValues> = async (data) => {
+    const onSubmit: SubmitHandler<AnnouncementFormValues> = (data) => {
         if (!firestore || !user) return;
 
         try {

@@ -62,7 +62,7 @@ export default function ResourceManagementPanel() {
     }, [editingResource, form, dialogOpen]);
 
 
-    const onSubmit: SubmitHandler<ResourceFormValues> = async (data) => {
+    const onSubmit: SubmitHandler<ResourceFormValues> = (data) => {
         if (!firestore) return;
 
         try {
@@ -127,7 +127,7 @@ export default function ResourceManagementPanel() {
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="source" render={({ field }) => (
-                                    <FormItem><FormLabel>Sumber</FormLabel><FormControl><Input placeholder="Contoh: YouTube, Blog, Spotify" {...field} /></FormControl><FormMessage /></FormMessage>
+                                    <FormItem><FormLabel>Sumber</FormLabel><FormControl><Input placeholder="Contoh: YouTube, Blog, Spotify" {...field} /></FormControl><FormMessage /></FormItem>
                                 )}/>
                                  <FormField control={form.control} name="imageId" render={({ field }) => (
                                     <FormItem><FormLabel>Image ID</FormLabel><FormControl><Input placeholder="Contoh: resource_video" {...field} /></FormControl><FormMessage /></FormItem>

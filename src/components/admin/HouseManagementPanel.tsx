@@ -60,7 +60,7 @@ export default function HouseManagementPanel() {
     }, [editingHouse, form, dialogOpen]);
 
 
-    const onSubmit: SubmitHandler<HouseFormValues> = async (data) => {
+    const onSubmit: SubmitHandler<HouseFormValues> = (data) => {
         if (!firestore) return;
 
         try {
