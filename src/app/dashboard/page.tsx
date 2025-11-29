@@ -69,17 +69,17 @@ export default function DashboardOverviewPage() {
   const userProfileRef = useMemoFirebase(() => user ? doc(firestore, `users/${user.uid}/profile`, user.uid) : null, [user, firestore]);
   const { data: userProfile, isLoading: isUserProfileLoading } = useDoc(userProfileRef);
 
-  const housesQuery = useMemoFirebase(() => collection(firestore, 'houses'), [firestore]);
-  const { data: houses, isLoading: areHousesLoading } = useCollection(housesQuery);
+  const housesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'houses'), orderBy('totalPoints', 'desc')) : null, [firestore]);
+  const { data: sortedHouses, isLoading: areHousesLoading } = useCollection(housesQuery);
   
-  const leaderboardQuery = useMemoFirebase(() => query(collection(firestore, 'users'), orderBy('points', 'desc'), limit(5)), [firestore]);
+  const leaderboardQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('points', 'desc'), limit(5)) : null, [firestore]);
   const { data: leaderboard, isLoading: isLeaderboardLoading } = useCollection(leaderboardQuery);
 
-  const userHouse = houses?.find((h) => h.id === userProfile?.houseId);
-  const sortedHouses = houses ? [...houses].sort((a, b) => b.points - a.points) : [];
+  const userHouse = sortedHouses?.find((h) => h.id === userProfile?.houseId);
   
-  // Note: Rank is based on the limited leaderboard query, not all users.
   const userRank = leaderboard?.findIndex((s) => s.id === user?.uid) + 1;
+
+  const houses = useCollection(useMemoFirebase(() => firestore ? collection(firestore, 'houses') : null, [firestore])).data;
 
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
@@ -92,7 +92,7 @@ export default function DashboardOverviewPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                {userRank > 0 ? `Peringkat #${userRank} dari ${leaderboard?.length}` : 'Peringkat tidak tersedia'}
+                {userRank > 0 ? `Peringkat #${userRank} di antara siswa teratas` : 'Peringkat tidak tersedia'}
               </div>
             </CardContent>
           </Card>
@@ -148,7 +148,7 @@ export default function DashboardOverviewPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedHouses.map((house, index) => (
+                  {sortedHouses?.map((house, index) => (
                     <TableRow key={house.id} className={house.id === userProfile?.houseId ? "bg-accent" : ""}>
                       <TableCell>
                         <div className="font-medium flex items-center justify-center h-8 w-8 rounded-full bg-muted">

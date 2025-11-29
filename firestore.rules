@@ -77,6 +77,11 @@ service cloud.firestore {
       allow get, list: if true;
       allow write: if false; // Admin only
     }
+    
+    match /resources/{resourceId} {
+      allow get, list: if isSignedIn();
+      allow write: if false; // Admin only
+    }
 
     match /ppdbApplications/{appId} {
         allow read, write: if false; // Admin only

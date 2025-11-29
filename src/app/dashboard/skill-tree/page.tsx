@@ -4,7 +4,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { cn } from '@/lib/utils';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
-import { CheckCircle2, Lock, GitBranch, Loader2 } from 'lucide-react';
+import { CheckCircle2, Lock, GitBranch } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
@@ -32,11 +32,10 @@ export default function SkillTreePage() {
   const userProfileRef = useMemoFirebase(() => user ? doc(firestore, `users/${user.uid}/profile`, user.uid) : null, [user, firestore]);
   const { data: userProfile, isLoading: isUserProfileLoading } = useDoc(userProfileRef);
 
-  // In a real app, this would be dynamic based on the user's major
-  const skillTreeName = userProfile?.jurusan || 'Teknik Komputer & Jaringan'; 
+  const skillTreeName = userProfile?.jurusan || 'Keahlian'; 
 
   const tiersQuery = useMemoFirebase(
-    () => query(collection(firestore, 'skillTrees/tkj/tiers'), orderBy('order')),
+    () => firestore ? query(collection(firestore, 'skillTrees/tkj/tiers'), orderBy('order')) : null,
     [firestore]
   );
   const { data: tiers, isLoading: isLoadingTiers } = useCollection(tiersQuery);

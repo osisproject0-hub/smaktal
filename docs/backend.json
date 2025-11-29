@@ -27,6 +27,14 @@
           "type": "string",
           "description": "URL of the user's profile picture.",
           "format": "uri"
+        },
+        "points": {
+          "type": "number",
+          "description": "Gamification points for the user."
+        },
+        "houseId": {
+          "type": "string",
+          "description": "ID of the house the user belongs to."
         }
       },
       "required": [
@@ -71,8 +79,7 @@
         }
       },
       "required": [
-        "id",
-        "houseId"
+        "id"
       ]
     },
     "Course": {
@@ -246,7 +253,8 @@
       },
       "required": [
         "id",
-        "name"
+        "name",
+        "totalPoints"
       ]
     },
     "WellBeingCheckIn": {
@@ -297,6 +305,20 @@
         }
       },
       "required": ["name", "order", "skills"]
+    },
+    "Resource": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Resource",
+      "description": "Represents a well-being resource.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["Video", "Artikel", "Podcast"] },
+        "title": { "type": "string" },
+        "source": { "type": "string" },
+        "imageId": { "type": "string" }
+      },
+      "required": ["id", "type", "title", "source", "imageId"]
     }
   },
   "auth": {
@@ -443,6 +465,22 @@
             {
               "name": "tierId",
               "description": "The unique identifier for the tier."
+            }
+          ]
+        }
+      },
+       {
+        "path": "/resources/{resourceId}",
+        "definition": {
+          "entityName": "Resource",
+          "schema": {
+            "$ref": "#/backend/entities/Resource"
+          },
+          "description": "Collection for well-being resources. Publicly readable.",
+          "params": [
+            {
+              "name": "resourceId",
+              "description": "The unique identifier for the resource."
             }
           ]
         }

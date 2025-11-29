@@ -8,11 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Smile, Meh, Frown, Laugh, Angry, Loader2 } from 'lucide-react';
-import { wellbeingResources } from '@/lib/mock-data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
-import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const moodOptions = [
   { mood: 'Senang', icon: Laugh, color: 'text-green-500', score: 5 },
@@ -22,12 +22,27 @@ const moodOptions = [
   { mood: 'Marah', icon: Angry, color: 'text-red-500', score: 1 },
 ];
 
+function ResourceSkeleton() {
+    return (
+        <Card className="overflow-hidden">
+            <Skeleton className="w-full aspect-video" />
+            <CardHeader>
+                <Skeleton className="h-5 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+            </CardHeader>
+        </Card>
+    );
+}
+
 export default function WellbeingPage() {
   const { toast } = useToast();
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const firestore = useFirestore();
   const { user } = useUser();
+
+  const resourcesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'resources') : null, [firestore]);
+  const { data: wellbeingResources, isLoading: isLoadingResources } = useCollection(resourcesQuery);
 
   const handleMoodSubmit = async () => {
     if (selectedMood && user && firestore) {
@@ -55,11 +70,7 @@ export default function WellbeingPage() {
             setSelectedMood(null);
         })
         .catch(() => {
-           toast({
-              title: 'Gagal',
-              description: 'Gagal mengirim check-in. Coba lagi.',
-              variant: 'destructive',
-            });
+           // Error is handled by the global error handler via non-blocking update function
         })
         .finally(() => {
             setIsSubmitting(false);
@@ -138,29 +149,37 @@ export default function WellbeingPage() {
       <div className="lg:col-span-3">
           <h2 className="font-headline text-2xl mt-4 mb-4">Sumber Daya</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {wellbeingResources.map(resource => {
-                  const resourceImage = PlaceHolderImages.find(img => img.id === resource.imageId);
-                  return (
-                    <Card key={resource.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
-                        {resourceImage && (
-                            <div className="overflow-hidden">
-                                <Image 
-                                    src={resourceImage.imageUrl} 
-                                    alt={resource.title} 
-                                    width={400} 
-                                    height={225} 
-                                    className="w-full object-cover aspect-video transition-transform duration-300 group-hover:scale-105"
-                                    data-ai-hint={resourceImage.imageHint}
-                                />
-                            </div>
-                        )}
-                        <CardHeader>
-                            <CardTitle className="text-base group-hover:text-primary transition-colors">{resource.title}</CardTitle>
-                            <CardDescription>{resource.type} dari {resource.source}</CardDescription>
-                        </CardHeader>
-                    </Card>
-                  )
-              })}
+              {isLoadingResources ? (
+                <>
+                    <ResourceSkeleton />
+                    <ResourceSkeleton />
+                    <ResourceSkeleton />
+                </>
+              ) : (
+                wellbeingResources?.map(resource => {
+                    const resourceImage = PlaceHolderImages.find(img => img.id === resource.imageId);
+                    return (
+                        <Card key={resource.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
+                            {resourceImage && (
+                                <div className="overflow-hidden">
+                                    <Image 
+                                        src={resourceImage.imageUrl} 
+                                        alt={resource.title} 
+                                        width={400} 
+                                        height={225} 
+                                        className="w-full object-cover aspect-video transition-transform duration-300 group-hover:scale-105"
+                                        data-ai-hint={resourceImage.imageHint}
+                                    />
+                                </div>
+                            )}
+                            <CardHeader>
+                                <CardTitle className="text-base group-hover:text-primary transition-colors">{resource.title}</CardTitle>
+                                <CardDescription>{resource.type} dari {resource.source}</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    )
+                })
+              )}
           </div>
       </div>
     </div>
