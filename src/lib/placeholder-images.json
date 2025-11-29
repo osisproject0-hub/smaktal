@@ -1,3 +1,70 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "avatar1",
+      "description": "Avatar of Budi Santoso",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjQzNjgzMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar2",
+      "description": "Avatar of Ani Wijaya",
+      "imageUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjQzNjgzMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar3",
+      "description": "Avatar of Citra Lestari",
+      "imageUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjQzNjgzMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar4",
+      "description": "Avatar of Eko Prasetyo",
+      "imageUrl": "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjQzNjgzMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "house_nusantara",
+      "description": "Emblem of House Nusantara",
+      "imageUrl": "https://images.unsplash.com/photo-1719437492355-9686ac0bb4d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxlYWdsZSUyMHNoaWVsZHxlbnwwfHx8fDE3NjQ0MDU3Mjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "eagle shield"
+    },
+    {
+      "id": "house_garuda",
+      "description": "Emblem of House Garuda",
+      "imageUrl": "https://images.unsplash.com/photo-1694787718164-91378257cc64?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxsaW9uJTIwc2hpZWxkfGVufDB8fHx8MTc2NDM3OTE3OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lion shield"
+    },
+    {
+      "id": "house_cendekia",
+      "description": "Emblem of House Cendekia",
+      "imageUrl": "https://images.unsplash.com/photo-1563008493-0394d5338226?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8b3dsJTIwYm9va3xlbnwwfHx8fDE3NjQ0MDU3Mjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "owl book"
+    },
+    {
+      "id": "house_pertiwi",
+      "description": "Emblem of House Pertiwi",
+      "imageUrl": "https://images.unsplash.com/photo-1694195968525-102c87ea0fc4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx0cmVlJTIwc2hpZWxkfGVufDB8fHx8MTc2NDQwNTcyN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tree shield"
+    },
+    {
+      "id": "resource_video",
+      "description": "Thumbnail for a video resource",
+      "imageUrl": "https://images.unsplash.com/photo-1584949091598-c31daaaa4aa9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0ZWNobm9sb2d5JTIwY29kZXxlbnwwfHx8fDE3NjQzNjAyMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "technology code"
+    },
+    {
+      "id": "resource_article",
+      "description": "Thumbnail for an article resource",
+      "imageUrl": "https://images.unsplash.com/photo-1453928582365-b6ad33cbcf64?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb21wdXRlciUyMGRlc2t8ZW58MHx8fHwxNzY0MzIyOTY3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "computer desk"
+    },
+    {
+      "id": "resource_podcast",
+      "description": "Thumbnail for a podcast resource",
+      "imageUrl": "https://images.unsplash.com/photo-1629555256489-3af0ebcfecef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtaWNyb3Bob25lJTIwYXVkaW98ZW58MHx8fHwxNzY0Mzk1NjU2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "microphone audio"
+    }
+  ]
 }
