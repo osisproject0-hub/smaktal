@@ -209,12 +209,9 @@
           "type": "string",
           "description": "Content of the announcement."
         },
-        "targetAudience": {
-          "type": "array",
-          "description": "Target audience for the announcement (e.g., ['student', 'teacher']).",
-          "items": {
-            "type": "string"
-          }
+        "authorName": {
+          "type": "string",
+          "description": "Name of the authoring admin."
         },
         "createdAt": {
           "type": "string",
@@ -225,7 +222,9 @@
       "required": [
         "id",
         "title",
-        "content"
+        "content",
+        "authorName",
+        "createdAt"
       ]
     },
     "House": {
@@ -248,7 +247,8 @@
         },
         "emblemUrl": {
           "type": "string",
-          "description": "URL of the house emblem image."
+          "description": "URL of the house emblem image.",
+          "format": "uri"
         }
       },
       "required": [
@@ -457,7 +457,7 @@
           "schema": {
             "$ref": "#/backend/entities/Announcement"
           },
-          "description": "Collection for announcements. Publicly readable.",
+          "description": "Collection for announcements. Readable by signed-in users, writable by admins.",
           "params": [
             {
               "name": "announcementId",
@@ -473,7 +473,7 @@
           "schema": {
             "$ref": "#/backend/entities/House"
           },
-          "description": "Collection for houses. Readable by all signed-in users.",
+          "description": "Collection for houses. Readable by all signed-in users, writable by admins.",
           "params": [
             {
               "name": "houseId",
@@ -509,7 +509,7 @@
           "schema": {
             "$ref": "#/backend/entities/Resource"
           },
-          "description": "Collection for well-being resources. Publicly readable.",
+          "description": "Collection for well-being resources. Readable by signed-in users, writable by admins.",
           "params": [
             {
               "name": "resourceId",
@@ -549,5 +549,3 @@
     ]
   }
 }
-
-    

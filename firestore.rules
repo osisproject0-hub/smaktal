@@ -10,25 +10,28 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
+    
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
 
     match /users/{userId} {
       // Users can read their own document.
-      // Allow reading all user docs for leaderboard functionality.
+      // Allow reading all user docs for leaderboard & admin functionality.
       allow get: if isSignedIn();
       allow list: if isSignedIn();
 
       // A user can create their own document.
-      // On creation, we can write to the main user doc and the profile subcollection.
       allow create: if isOwner(userId);
       
-      // A user can only update their own document.
-      allow update: if isOwner(userId);
+      // A user can only update their own document, but an admin can update any.
+      allow update: if isOwner(userId) || isAdmin();
       
-      allow delete: if isOwner(userId);
+      allow delete: if isOwner(userId) || isAdmin();
 
       match /profile/{profileId} {
         // Profile is 1:1 with user, and the ID should match.
-        allow get: if isOwner(userId);
+        allow get: if isOwner(userId) || isAdmin();
         allow create, update, delete: if isOwner(userId) && profileId == userId;
       }
 
@@ -43,8 +46,8 @@ service cloud.firestore {
       // All signed-in users can read house data for leaderboards.
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      // Writes should be handled by admin/backend functions.
-      allow write: if false;
+      // Admin can write/update/delete houses.
+      allow write: if isAdmin();
     }
 
     match /skillTrees/{treeId}/tiers/{tierId} {
@@ -52,7 +55,7 @@ service cloud.firestore {
         allow get: if isSignedIn();
         allow list: if isSignedIn();
         // Writes should be handled by admin/backend functions.
-        allow write: if false;
+        allow write: if isAdmin();
     }
 
     match /courses/{courseId} {
@@ -74,24 +77,24 @@ service cloud.firestore {
     }
 
     match /announcements/{announcementId} {
-      allow get, list: if true;
-      allow write: if false; // Admin only
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
     }
     
     match /resources/{resourceId} {
       allow get, list: if isSignedIn();
-      allow write: if false; // Admin only
+      allow write: if isAdmin();
     }
 
     match /ppdbApplications/{appId} {
-        allow read, write: if false; // Admin only
+        allow read, write: if false; // Still admin only, but not implemented yet.
     }
 
     match /learningTopics/{topicId} {
       // All signed-in users can read learning topics.
       allow get, list: if isSignedIn();
-      // Writes should be handled by admin/backend functions.
-      allow write: if false;
+      // Admin can manage topics
+      allow write: if isAdmin();
     }
 
     match /quizResults/{resultId} {
@@ -102,5 +105,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
