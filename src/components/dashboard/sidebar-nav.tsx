@@ -11,13 +11,20 @@ import {
   Bot,
   Swords,
   Book,
+  Shield,
 } from 'lucide-react';
+import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: Home },
   { href: '/dashboard/skill-tree', label: 'Pohon Keahlian', icon: Binary },
   { href: '/dashboard/well-being', label: 'Kesejahteraan', icon: HeartPulse },
   { href: '/dashboard/ai-tutor', label: 'AI Tutor', icon: Bot },
+];
+
+const adminItems = [
+  { href: '/dashboard/admin', label: 'Admin', icon: Shield, role: 'admin' },
 ];
 
 const otherItems = [
@@ -27,6 +34,12 @@ const otherItems = [
 
 export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
   const pathname = usePathname();
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+  const { data: userData } = useDoc(userDocRef);
+  const userRole = userData?.role;
 
   const renderLink = (item: any) => {
     const isActive = pathname === item.href;
@@ -47,6 +60,11 @@ export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
         {item.label}
       </>
     );
+    
+    // Hide link if it requires a role and user doesn't have it
+    if (item.role && item.role !== userRole) {
+        return null;
+    }
 
     if (item.disabled) {
       return <span className={isMobile ? mobileLinkClass : linkClass}>{linkContent}</span>;
@@ -58,21 +76,33 @@ export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
       </Link>
     );
   }
+  
+  const allNavItems = [...navItems, ...otherItems];
+  const allAdminItems = [...adminItems];
 
-  if (isMobile) {
-    return (
+  return (
+    <nav className="grid items-start text-sm font-medium">
+       {isMobile ? (
         <>
             {navItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
             {otherItems.map((item) => <React.Fragment key={item.label}>{renderLink(item)}</React.Fragment>)}
+            {userRole === 'admin' && <div className="my-2 border-t border-muted" />}
+            {allAdminItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
         </>
-    )
-  }
+       ) : (
+        <div className="px-4">
+            {navItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
+            <h3 className="mb-2 mt-6 px-3 text-xs font-semibold text-muted-foreground/80 tracking-wider">PROYEK</h3>
+            {otherItems.map((item) => <React.Fragment key={item.label}>{renderLink(item)}</React.Fragment>)}
 
-  return (
-    <div className="grid items-start px-4 text-sm font-medium">
-      {navItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
-      <h3 className="mb-2 mt-6 px-3 text-xs font-semibold text-muted-foreground/80 tracking-wider">PROYEK</h3>
-      {otherItems.map((item) => <React.Fragment key={item.label}>{renderLink(item)}</React.Fragment>)}
-    </div>
+            {userRole === 'admin' && (
+                <>
+                    <h3 className="mb-2 mt-6 px-3 text-xs font-semibold text-muted-foreground/80 tracking-wider">ADMIN</h3>
+                    {allAdminItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
+                </>
+            )}
+        </div>
+       )}
+    </nav>
   );
 }
