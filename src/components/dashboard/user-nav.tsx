@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth, useUser } from '@/firebase';
+import ThemeSwitcher from '@/components/ui/theme-switcher';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 
@@ -56,6 +57,9 @@ export function UserNav() {
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
+        <div className="px-4 py-2">
+          <ThemeSwitcher />
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem disabled>Profil</DropdownMenuItem>

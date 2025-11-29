@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import RouteTransition from '@/components/ui/route-transition';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
@@ -24,7 +25,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <FirebaseClientProvider>{children}</FirebaseClientProvider>
+        <FirebaseClientProvider>
+          {/* Page transitions for route changes */}
+          <RouteTransition>{children}</RouteTransition>
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>

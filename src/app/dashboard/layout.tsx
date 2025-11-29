@@ -2,6 +2,7 @@
 import React from 'react';
 import { SidebarNav } from '@/components/dashboard/sidebar-nav';
 import { UserNav } from '@/components/dashboard/user-nav';
+import ThemeSwitcher from '@/components/ui/theme-switcher';
 import { Logo } from '@/components/icons';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -68,8 +69,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="relative ml-auto flex-1 md:grow-0" />
-          <UserNav />
+          <div className="relative ml-auto flex-1 md:grow-0 flex items-center justify-end gap-3">
+            <ThemeSwitcher />
+            <UserNav />
+          </div>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <MotionContainer className="w-full h-full">

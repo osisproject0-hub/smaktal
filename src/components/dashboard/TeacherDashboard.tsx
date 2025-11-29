@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import MotionContainer from '@/components/ui/motion';
 import { motion } from 'framer-motion';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { BookOpen, MessageSquare, CheckSquare } from 'lucide-react';
 
 type Props = {
@@ -39,6 +41,26 @@ export default function TeacherDashboard({ isLoading, myClasses = [] }: Props) {
     show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 220, damping: 28 } },
   };
 
+  // get assignments for this teacher and compute counts per course
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const assignmentsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'assignments'), where('teacherId', '==', user.uid));
+  }, [firestore, user]);
+
+  const { data: assignments, isLoading: isAssignmentsLoading } = useCollection(assignmentsQuery);
+
+  const assignmentCounts = React.useMemo(() => {
+    if (!assignments) return {} as Record<string, number>;
+    return assignments.reduce((acc: Record<string, number>, a: any) => {
+      const cid = a?.courseId || 'unknown';
+      acc[cid] = (acc[cid] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [assignments]);
+
   return (
     <MotionContainer className="w-full">
       <motion.div initial="hidden" animate="show" variants={containerVariants} className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -62,7 +84,10 @@ export default function TeacherDashboard({ isLoading, myClasses = [] }: Props) {
                   <motion.li key={c.id || idx} variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }} className="flex items-center justify-between p-3 rounded-md hover:bg-muted transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="font-semibold">{c.title}</div>
-                      <div className="text-xs text-muted-foreground">{c.studentCount ?? 0} siswa</div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <div>{c.studentCount ?? 0} siswa</div>
+                        <div className="px-2 py-0.5 rounded-md bg-muted/40">{assignmentCounts[c.id] ?? 0} tugas</div>
+                      </div>
                     </div>
                     <Button variant="outline" size="sm">Open</Button>
                   </motion.li>
