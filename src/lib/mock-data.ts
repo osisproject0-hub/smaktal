@@ -1,3 +1,6 @@
+// This file is being phased out in favor of Firestore.
+// Some data might remain for UI components that are not yet migrated.
+
 export const currentUser = {
   id: 'user1',
   name: 'Budi Santoso',
@@ -9,6 +12,7 @@ export const currentUser = {
   points: 175,
 };
 
+// Deprecated in favor of /houses collection in Firestore
 export const houses = [
   { id: 'nusantara', name: 'Nusantara', points: 12540, emblemId: 'house_nusantara' },
   { id: 'garuda', name: 'Garuda', points: 11890, emblemId: 'house_garuda' },
@@ -16,6 +20,7 @@ export const houses = [
   { id: 'pertiwi', name: 'Pertiwi', points: 10850, emblemId: 'house_pertiwi' },
 ];
 
+// Deprecated in favor of /users collection in Firestore
 export const leaderboard = [
   { id: 'user1', name: 'Budi Santoso', points: 175, avatarId: 'avatar1', house: 'Nusantara' },
   { id: 'user2', name: 'Ani Wijaya', points: 162, avatarId: 'avatar2', house: 'Garuda' },
@@ -23,6 +28,7 @@ export const leaderboard = [
   { id: 'user4', name: 'Eko Prasetyo', points: 145, avatarId: 'avatar4', house: 'Pertiwi' },
 ];
 
+// Deprecated in favor of /skillTrees collection in Firestore
 export const skillTree = {
   name: 'Teknik Komputer & Jaringan',
   tiers: [

@@ -23,24 +23,17 @@
           "type": "string",
           "description": "User's role within the system (e.g., 'student', 'teacher', 'admin', 'parent')."
         },
-        "profileId": {
+        "photoURL": {
           "type": "string",
-          "description": "Reference to UserProfile. (Relationship: User 1:1 UserProfile)"
-        },
-        "wellBeingIds": {
-          "type": "array",
-          "description": "References to WellBeingCheckIns. (Relationship: User 1:N WellBeingCheckIn)",
-          "items": {
-            "type": "string"
-          }
+          "description": "URL of the user's profile picture.",
+          "format": "uri"
         }
       },
       "required": [
         "id",
         "email",
         "displayName",
-        "role",
-        "profileId"
+        "role"
       ]
     },
     "UserProfile": {
@@ -51,12 +44,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user profile."
-        },
-        "photoURL": {
-          "type": "string",
-          "description": "URL of the user's profile picture.",
-          "format": "uri"
+          "description": "Unique identifier for the user profile, should match the user's UID."
         },
         "jurusan": {
           "type": "string",
@@ -68,22 +56,18 @@
         },
         "houseId": {
           "type": "string",
-          "description": "Reference to House. (Relationship: UserProfile 1:1 House)"
+          "description": "Reference to House collection ID."
         },
         "points": {
           "type": "number",
           "description": "Gamification points earned by the user."
         },
-        "skillTree": {
-          "type": "string",
-          "description": "JSON object representing the user's skill tree progress."
-        },
-        "parentIds": {
+        "unlockedSkills": {
           "type": "array",
-          "description": "References to Users who are parents of this student. (Relationship: UserProfile 1:N User)",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "List of skill IDs that the user has unlocked."
         }
       },
       "required": [
@@ -254,6 +238,10 @@
         "totalPoints": {
           "type": "number",
           "description": "Total points earned by the house."
+        },
+        "emblemUrl": {
+          "type": "string",
+          "description": "URL of the house emblem image."
         }
       },
       "required": [
@@ -267,10 +255,6 @@
       "type": "object",
       "description": "Represents a student's well-being check-in record.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the check-in record."
-        },
         "mood": {
           "type": "number",
           "description": "Student's mood rating (e.g., 1-5)."
@@ -286,16 +270,38 @@
         }
       },
       "required": [
-        "id",
         "mood",
         "timestamp",
         "userId"
       ]
+    },
+    "SkillTreeTier": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SkillTreeTier",
+      "type": "object",
+      "description": "Represents a tier within a skill tree.",
+      "properties": {
+        "name": { "type": "string" },
+        "order": { "type": "number" },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "required": ["id", "name", "description"]
+          }
+        }
+      },
+      "required": ["name", "order", "skills"]
     }
   },
   "auth": {
     "providers": [
-      "password",
+      "google.com",
       "anonymous"
     ]
   },
@@ -308,7 +314,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Collection for all users. User documents are secured via path-based rules, ensuring a user can only access their own document.",
+          "description": "Collection for all users. User documents are secured via path-based rules, ensuring a user can only access their own document. This collection is readable by all signed-in users for leaderboard purposes.",
           "params": [
             {
               "name": "userId",
@@ -318,17 +324,21 @@
         }
       },
       {
-        "path": "/users/{userId}/profile",
+        "path": "/users/{userId}/profile/{profileId}",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Subcollection for user profiles, nested under the users collection. Securing profile data using path based rules. Read/write access is limited to the user themselves.",
+          "description": "Subcollection for user profiles, nested under the users collection. Read/write access is limited to the user themselves.",
           "params": [
             {
               "name": "userId",
               "description": "The unique identifier for the user."
+            },
+            {
+               "name": "profileId",
+               "description": "Should be the same as userId for a 1:1 relationship."
             }
           ]
         }
@@ -340,7 +350,7 @@
           "schema": {
             "$ref": "#/backend/entities/WellBeingCheckIn"
           },
-          "description": "Subcollection for user well-being check-ins, nested under the users collection.  Secured by path based rules. Access is restricted to the user who owns the check-in data.",
+          "description": "Subcollection for user well-being check-ins. Access is restricted to the user who owns the check-in data.",
           "params": [
             {
               "name": "userId",
@@ -360,7 +370,7 @@
           "schema": {
             "$ref": "#/backend/entities/Course"
           },
-          "description": "Collection for courses. The studentIds is an array of user IDs enrolled in this course. The teacherId defines the teacher of the course.  Access control: Teachers can manage their courses, and students can access courses they are enrolled in.",
+          "description": "Collection for courses. Teachers can manage their courses, and students can access courses they are enrolled in.",
           "params": [
             {
               "name": "courseId",
@@ -376,27 +386,11 @@
           "schema": {
             "$ref": "#/backend/entities/Project"
           },
-          "description": "Collection for student projects. Includes denormalized 'authorName' and 'authorAvatar' for authorization independence and efficient data retrieval.  Access control: Only the author and listed collaborators can access or modify the project.",
+          "description": "Collection for student projects. Only the author and collaborators can access/modify.",
           "params": [
             {
               "name": "projectId",
               "description": "The unique identifier for the project."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/ppdbApplications/{ppdbApplicationId}",
-        "definition": {
-          "entityName": "PpdbApplication",
-          "schema": {
-            "$ref": "#/backend/entities/PpdbApplication"
-          },
-          "description": "Collection for PPDB applications. Access control: Limited to authorized personnel for managing applications.",
-          "params": [
-            {
-              "name": "ppdbApplicationId",
-              "description": "The unique identifier for the PPDB application."
             }
           ]
         }
@@ -408,7 +402,7 @@
           "schema": {
             "$ref": "#/backend/entities/Announcement"
           },
-          "description": "Collection for announcements.  Access control: Creation and deletion limited to admins. Read access is public but can be filtered based on targetAudience.",
+          "description": "Collection for announcements. Publicly readable.",
           "params": [
             {
               "name": "announcementId",
@@ -424,7 +418,7 @@
           "schema": {
             "$ref": "#/backend/entities/House"
           },
-          "description": "Collection for houses. Access control: Limited to authorized personnel for managing house data.",
+          "description": "Collection for houses. Readable by all signed-in users.",
           "params": [
             {
               "name": "houseId",
@@ -432,8 +426,27 @@
             }
           ]
         }
+      },
+      {
+        "path": "/skillTrees/{treeId}/tiers/{tierId}",
+        "definition": {
+          "entityName": "SkillTreeTier",
+          "schema": {
+            "$ref": "#/backend/entities/SkillTreeTier"
+          },
+          "description": "Collection of tiers for a specific skill tree. Readable by all signed-in users.",
+          "params": [
+            {
+              "name": "treeId",
+              "description": "The ID of the skill tree (e.g., 'tkj')."
+            },
+            {
+              "name": "tierId",
+              "description": "The unique identifier for the tier."
+            }
+          ]
+        }
       }
-    ],
-    "reasoning": "The Firestore data structure is designed to support the features of the Smart Digital Campus platform, emphasizing real-time data synchronization, user personalization, and collaborative workspaces. Authorization Independence is achieved through strategic denormalization, specifically within the `projects` collection, where `authorName` and `authorAvatar` are copied to avoid `get()` calls in security rules. This also applies to courses. The structure also accounts for role-based access control and data ownership. Segregation of data into collections like `users`, `courses`, `projects`, `ppdbApplications`, `announcements`, and `houses` ensures that each collection can have tailored security rules, preventing unintended data access. The use of subcollections for user-specific data (`users/{userId}/wellBeing`) maintains clear ownership. The membership map pattern is inherent within courses, where studentIds array defines the group membership.\n\nTo support QAPs (Rules are not Filters): Access to the `projects` collection is secured by ensuring that listing projects is based on individual access to a project, thus requiring the user to be either the author or a collaborator. Announcements can be configured with target audiences to ensure only relevant users are listed in their announcements.\n\nOwnership and referential integrity are maintained through explicit `userId` fields in `WellBeingCheckIn` documents and `teacherId` in the `Course` documents."
+    ]
   }
 }

@@ -1,14 +1,36 @@
-import Link from 'next/link';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/icons';
-import { Users } from 'lucide-react';
+import { useAuth, useUser } from '@/firebase';
+import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { Users, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
+  const handleSignIn = async () => {
+    if (auth) {
+      const provider = new GoogleAuthProvider();
+      await signInWithRedirect(auth, provider);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]"><div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_800px_at_100%_200px,hsl(var(--primary)),transparent)]"></div></div>
-      <Card className="w-full max-w-md shadow-2xl">
+      <Card className="w-full max-w-md shadow-2xl animate-fade-in">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <Logo className="h-8 w-8" />
@@ -20,12 +42,14 @@ export default function LoginPage() {
           <p className="text-center text-sm text-muted-foreground">
             Platform terintegrasi untuk siswa, guru, dan orang tua. Masuk untuk memulai.
           </p>
-          <Link href="/dashboard" className="w-full">
-            <Button className="w-full" size="lg">
-              <Users className="mr-2 h-4 w-4" />
-              Masuk sebagai Siswa
+          <Button className="w-full" size="lg" onClick={handleSignIn} disabled={isUserLoading}>
+              {isUserLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Users className="mr-2 h-4 w-4" />
+              )}
+              Masuk dengan Google
             </Button>
-          </Link>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />

@@ -1,237 +1,85 @@
-/**
- * This ruleset enforces a user-centric security model for the Smart Digital Campus platform.
- *
- * Core Philosophy:
- * Access is denied by default. Rules are designed to grant permissions explicitly based on user identity
- * and their relationship to the data. The primary security patterns are user ownership and shared access
- * through denormalized collaborator lists.
- *
- * Data Structure:
- * - /users/{userId}: The root for all user-specific data, including private subcollections like 'profile' and 'wellBeing'.
- * - /courses/{courseId}: Shared documents where access is governed by 'teacherId' and a 'studentIds' array.
- * - /projects/{projectId}: Collaborative documents where access is governed by 'authorId' and a 'collaboratorIds' array.
- * - /announcements/{announcementId}: Publicly readable data.
- * - /houses, /ppdbApplications: Administrative collections, locked from client-side writes to ensure they are managed by a trusted backend environment.
- *
- * Key Security Decisions:
- * - Strict Ownership: Data within a user's path (e.g., /users/{userId}/...) is accessible only by that authenticated user.
- * - No User Listing: The root /users collection is not listable to protect user privacy and prevent data scraping.
- * - Denormalization for Authorization: Collections like 'courses' and 'projects' denormalize member IDs directly onto the document. This avoids slow, expensive, and often impossible cross-document lookups in rules, making authorization fast and secure.
- * - Locked Admin Collections: Collections intended for administrative use are locked down (all writes are false). This is a secure-by-default posture that requires administrative tasks to be performed via a backend server or Cloud Function with Admin SDK privileges.
- *
- * Structural Segregation:
- * The data model effectively separates private user data (e.g., /users/{userId}/wellBeing) into user-owned subcollections
- * from shared data (/projects) and public data (/announcements) in top-level collections. This simplifies rule logic
- * and enhances query performance and security.
- */
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --------------------------------
-    // Helper Functions
-    // --------------------------------
-
-    /**
-     * Checks if the user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the authenticated user's UID matches the provided userId.
-     * This is the foundation of the user ownership model.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * Checks if a document currently exists in Firestore.
-     * Essential for secure update and delete operations.
-     */
-    function isExistingDoc() {
-      return resource != null;
-    }
-
-    /**
-     * A convenient combination of isOwner and isExistingDoc for update/delete.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && isExistingDoc();
-    }
-
-    /**
-     * Validates that the 'id' field of a new document matches the document's ID.
-     * Enforces consistency between the path and the document's data.
-     */
-    function idMatchesDocId(docId) {
-      return request.resource.data.id == docId;
-    }
-
-    /**
-     * Validates that a document's 'id' field is immutable on update.
-     */
-    function idIsImmutable() {
-      return request.resource.data.id == resource.data.id;
-    }
-
-    /**
-     * Validates that a document's 'userId' field matches the parent user ID on create.
-     */
-    function userIdMatchesPath(userId) {
-      return request.resource.data.userId == userId;
-    }
-
-    /**
-     * Validates that a document's 'userId' field is immutable on update.
-     */
-    function userIdIsImmutable() {
-      return request.resource.data.userId == resource.data.userId;
-    }
-
-
-    /**
-     * @description A user can create or modify their own user document, but cannot view other user documents.
-     * @path /users/{userId}
-     * @allow A logged-in user with UID 'user123' can create or update their own document at /users/user123.
-     * @deny A logged-in user with UID 'user123' cannot get, list, or update the document at /users/user456.
-     * @principle Restricts access to a user's own data tree and prevents enumeration of all users in the system.
-     */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && idMatchesDocId(userId);
-      allow update: if isExistingOwner(userId) && idIsImmutable();
-      allow delete: if isExistingOwner(userId);
+      // Users can read their own document.
+      // Allow reading all user docs for leaderboard functionality.
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
 
-      /**
-       * @description A user can manage their own profile document, which is an extension of their user data.
-       * @path /users/{userId}/profile/{profileDocId}
-       * @allow User 'user123' can create, read, and update any document inside /users/user123/profile/.
-       * @deny User 'user123' cannot access any documents inside /users/user456/profile/.
-       * @principle Enforces strict data ownership for sensitive user subcollections.
-       */
-      match /profile/{profileDocId} {
+      // A user can create their own document.
+      // On creation, we can write to the main user doc and the profile subcollection.
+      allow create: if isOwner(userId);
+      
+      // A user can only update their own document.
+      allow update: if isOwner(userId);
+      
+      allow delete: if isOwner(userId);
+
+      match /profile/{profileId} {
+        // Profile is 1:1 with user, and the ID should match.
         allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId);
-        allow update: if isExistingOwner(userId);
-        allow delete: if isExistingOwner(userId);
+        allow create, update, delete: if isOwner(userId) && profileId == userId;
       }
 
-      /**
-       * @description A user can create and manage their own private well-being check-in records.
-       * @path /users/{userId}/wellBeing/{wellBeingId}
-       * @allow User 'user123' can create a new check-in under /users/user123/wellBeing/.
-       * @deny User 'user123' cannot read or write check-ins under /users/user456/wellBeing/.
-       * @principle Enforces strict data ownership and validates relational integrity by ensuring the document's `userId` field matches the path.
-       */
       match /wellBeing/{wellBeingId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId) && userIdMatchesPath(userId);
-        allow update: if isExistingOwner(userId) && userIdIsImmutable();
-        allow delete: if isExistingOwner(userId);
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update, delete: if isOwner(userId);
       }
     }
 
-    /**
-     * @description Teachers can manage courses they own. Students enrolled in a course can read its data.
-     * @path /courses/{courseId}
-     * @allow A user whose UID is in the `studentIds` array can (get) the course document. A user whose UID matches `teacherId` can (update) it.
-     * @deny A user not listed as the teacher or a student cannot access the document. Listing all courses is denied.
-     * @principle Implements shared access using denormalized member lists (`teacherId`, `studentIds`) on the document itself.
-     */
-    match /courses/{courseId} {
-      function isTeacher(course) {
-        return isSignedIn() && request.auth.uid == course.teacherId;
-      }
-      function isEnrolled(course) {
-        return isSignedIn() && request.auth.uid in course.studentIds;
-      }
-
-      allow get: if isSignedIn() && (isTeacher(resource.data) || isEnrolled(resource.data));
-      allow list: if false;
-      allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
-      allow update: if isExistingDoc() && isTeacher(resource.data);
-      allow delete: if isExistingDoc() && isTeacher(resource.data);
-    }
-
-    /**
-     * @description Project authors and collaborators can access and modify projects. Only the author can delete it.
-     * @path /projects/{projectId}
-     * @allow User 'user123' who is listed in the `collaboratorIds` array can (update) the project.
-     * @deny An unauthenticated user or a user not listed as author or collaborator cannot (get) or (update) the project.
-     * @principle Implements collaborative, shared access using denormalized owner (`authorId`) and member (`collaboratorIds`) fields.
-     */
-    match /projects/{projectId} {
-      function isAuthor(project) {
-        return isSignedIn() && request.auth.uid == project.authorId;
-      }
-      function isCollaborator(project) {
-        return isSignedIn() && request.auth.uid in project.collaboratorIds;
-      }
-      function isMember(project) {
-        return isAuthor(project) || isCollaborator(project);
-      }
-      function authorIsImmutable() {
-        return request.resource.data.authorId == resource.data.authorId;
-      }
-
-      allow get: if isSignedIn() && isMember(resource.data);
-      allow list: if false;
-      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      allow update: if isExistingDoc() && isMember(resource.data) && authorIsImmutable();
-      allow delete: if isExistingDoc() && isAuthor(resource.data);
-    }
-
-    /**
-     * @description Announcements are public to all users, but can only be managed by a trusted backend.
-     * @path /announcements/{announcementId}
-     * @allow Any user, including unauthenticated ones, can (get) or (list) announcements.
-     * @deny Any client-side user attempt to (create), (update), or (delete) an announcement is rejected.
-     * @principle Implements public-read access while securing write operations. Writes are disabled pending a proper admin role system.
-     */
-    match /announcements/{announcementId} {
-      allow get: if true;
-      allow list: if true;
-      // CRITICAL: Cannot implement admin-only writes. The 'Announcement' entity is missing an 'ownerId' or 'authorId' field.
-      // These operations should be handled by a trusted server environment (e.g. Cloud Functions) with Admin privileges.
-      allow create: if false; // TODO: Add admin validation once a server-side role system is implemented.
-      allow update: if false; // TODO: Add admin validation once a server-side role system is implemented.
-      allow delete: if false; // TODO: Add admin validation once a server-side role system is implemented.
-    }
-
-    /**
-     * @description PPDB Applications are sensitive and managed by a trusted backend only.
-     * @path /ppdbApplications/{ppdbApplicationId}
-     * @allow No client-side operations are permitted.
-     * @deny All (get), (list), (create), (update), and (delete) requests from the client are rejected.
-     * @principle Enforces a secure-by-default posture for administrative data, requiring a trusted server for all modifications.
-     */
-    match /ppdbApplications/{ppdbApplicationId} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description House data is part of the core application logic and managed by a trusted backend only.
-     * @path /houses/{houseId}
-     * @allow No client-side operations are permitted.
-     * @deny All (get), (list), (create), (update), and (delete) requests from the client are rejected.
-     * @principle Enforces a secure-by-default posture for administrative data, requiring a trusted server for all modifications.
-     */
     match /houses/{houseId} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      // All signed-in users can read house data for leaderboards.
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      // Writes should be handled by admin/backend functions.
+      allow write: if false;
+    }
+
+    match /skillTrees/{treeId}/tiers/{tierId} {
+        // Skill trees are public reading for all users
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        // Writes should be handled by admin/backend functions.
+        allow write: if false;
+    }
+
+    match /courses/{courseId} {
+      allow get: if isSignedIn() && (request.auth.uid == resource.data.teacherId || request.auth.uid in resource.data.studentIds);
+      allow list: if false; // Don't allow listing all courses
+      allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
+      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.teacherId;
+    }
+
+    match /projects/{projectId} {
+      function isMember() {
+        return request.auth.uid == resource.data.authorId || request.auth.uid in resource.data.collaboratorIds;
+      }
+      allow get: if isSignedIn() && isMember();
+      allow list: if false; // Don't allow listing all projects
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update: if isSignedIn() && isMember();
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.authorId;
+    }
+
+    match /announcements/{announcementId} {
+      allow get, list: if true;
+      allow write: if false; // Admin only
+    }
+
+    match /ppdbApplications/{appId} {
+        allow read, write: if false; // Admin only
     }
   }
 }
