@@ -319,6 +319,39 @@
         "imageId": { "type": "string" }
       },
       "required": ["id", "type", "title", "source", "imageId"]
+    },
+     "LearningTopic": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LearningTopic",
+      "description": "Represents a topic available for the AI Tutor.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the topic (e.g., 'pemrograman-web')." },
+        "label": { "type": "string", "description": "Display name for the topic (e.g., 'Pemrograman Web')." },
+        "order": { "type": "number", "description": "Order for displaying the topic." }
+      },
+      "required": ["id", "label", "order"]
+    },
+    "QuizResult": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QuizResult",
+      "description": "Represents the result of a diagnostic quiz for a specific topic and user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The ID of the user who took the quiz." },
+        "topicId": { "type": "string", "description": "The ID of the learning topic." },
+        "results": {
+          "type": "object",
+          "description": "An object containing question IDs and scores.",
+          "additionalProperties": { "type": "number" }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the quiz was taken."
+        }
+      },
+      "required": ["userId", "topicId", "results", "createdAt"]
     }
   },
   "auth": {
@@ -469,7 +502,7 @@
           ]
         }
       },
-       {
+      {
         "path": "/resources/{resourceId}",
         "definition": {
           "entityName": "Resource",
@@ -484,7 +517,37 @@
             }
           ]
         }
+      },
+      {
+        "path": "/learningTopics/{topicId}",
+        "definition": {
+          "entityName": "LearningTopic",
+          "schema": { "$ref": "#/backend/entities/LearningTopic" },
+          "description": "Collection for AI Tutor learning topics. Readable by all signed-in users.",
+          "params": [
+            {
+              "name": "topicId",
+              "description": "The unique identifier for the learning topic."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/quizResults/{resultId}",
+        "definition": {
+          "entityName": "QuizResult",
+          "schema": { "$ref": "#/backend/entities/QuizResult" },
+          "description": "Collection for user quiz results. Users can only read and write their own results.",
+          "params": [
+            {
+              "name": "resultId",
+              "description": "The unique identifier for the quiz result."
+            }
+          ]
+        }
       }
     ]
   }
 }
+
+    

@@ -86,5 +86,21 @@ service cloud.firestore {
     match /ppdbApplications/{appId} {
         allow read, write: if false; // Admin only
     }
+
+    match /learningTopics/{topicId} {
+      // All signed-in users can read learning topics.
+      allow get, list: if isSignedIn();
+      // Writes should be handled by admin/backend functions.
+      allow write: if false;
+    }
+
+    match /quizResults/{resultId} {
+      // Users can create, read, update their own quiz results.
+      allow read, update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if false; // Don't allow deletion for record-keeping.
+    }
   }
 }
+
+    

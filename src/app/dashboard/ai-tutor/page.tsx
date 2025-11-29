@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Bot, Loader2, BookOpen, Video, FileText } from 'lucide-react';
 import { getLearningPlan } from './actions';
-import { learningTopics } from '@/lib/mock-data';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -24,6 +26,13 @@ function SubmitButton() {
 export default function AITutorPage() {
   const [state, formAction] = useFormState(getLearningPlan, null);
   const [topic, setTopic] = useState('');
+  const firestore = useFirestore();
+
+  const topicsQuery = useMemoFirebase(
+    () => firestore ? query(collection(firestore, 'learningTopics'), orderBy('order')) : null,
+    [firestore]
+  );
+  const { data: learningTopics, isLoading: isLoadingTopics } = useCollection(topicsQuery);
 
   return (
     <div className="grid gap-8 md:grid-cols-3">
@@ -44,18 +53,22 @@ export default function AITutorPage() {
                 </p>
                 <div className="space-y-2">
                   <Label htmlFor="topic">Pilih Topik Pembelajaran</Label>
-                   <Select name="topic" required onValueChange={setTopic}>
-                    <SelectTrigger id="topic" aria-label="Pilih Topik">
-                      <SelectValue placeholder="Pilih topik..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {learningTopics.map((topic) => (
-                        <SelectItem key={topic.value} value={topic.value}>
-                          {topic.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {isLoadingTopics ? (
+                    <Skeleton className="h-10 w-full" />
+                  ) : (
+                    <Select name="topic" required onValueChange={setTopic}>
+                      <SelectTrigger id="topic" aria-label="Pilih Topik">
+                        <SelectValue placeholder="Pilih topik..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {learningTopics?.map((topic) => (
+                          <SelectItem key={topic.id} value={topic.id}>
+                            {topic.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -112,3 +125,5 @@ export default function AITutorPage() {
     </div>
   );
 }
+
+    
