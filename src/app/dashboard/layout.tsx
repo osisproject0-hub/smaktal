@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import MotionContainer from '@/components/ui/motion';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
@@ -71,7 +72,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <UserNav />
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          {children}
+          <MotionContainer className="w-full h-full">
+            {children}
+          </MotionContainer>
         </main>
       </div>
     </div>

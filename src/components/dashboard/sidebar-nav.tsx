@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React from 'react';
 import Link from 'next/link';
@@ -14,6 +14,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { motion } from 'framer-motion';
 import { doc } from 'firebase/firestore';
 
 const navItems = [
@@ -84,18 +85,42 @@ export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
 
   return (
     <nav className="grid items-start text-sm font-medium">
-       {isMobile ? (
+      {isMobile ? (
         <>
-            {navItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
-            {otherItems.map((item) => <React.Fragment key={item.label}>{renderLink(item)}</React.Fragment>)}
+            <motion.div initial="hidden" animate="visible" variants={{ hidden: {}, visible: {} }} className="space-y-2">
+              {navItems.map((item, i) => (
+                <motion.div key={item.href} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.04 * i }}>
+                  {renderLink(item)}
+                </motion.div>
+              ))}
+            </motion.div>
+            <motion.div className="space-y-2">
+              {otherItems.map((item, i) => (
+                <motion.div key={item.label} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.04 * (i + navItems.length) }}>
+                  {renderLink(item)}
+                </motion.div>
+              ))}
+            </motion.div>
             {userRole === 'admin' && <div className="my-2 border-t border-muted" />}
             {allAdminItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
         </>
        ) : (
         <div className="px-4">
-            {navItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
+            <div className="px-0">
+              {navItems.map((item, i) => (
+                <motion.div key={item.href} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}>
+                  {renderLink(item)}
+                </motion.div>
+              ))}
+            </div>
             <h3 className="mb-2 mt-6 px-3 text-xs font-semibold text-muted-foreground/80 tracking-wider">PROYEK</h3>
-            {otherItems.map((item) => <React.Fragment key={item.label}>{renderLink(item)}</React.Fragment>)}
+            <div className="px-0">
+              {otherItems.map((item, i) => (
+                <motion.div key={item.label} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: (i + navItems.length) * 0.04 }}>
+                  {renderLink(item)}
+                </motion.div>
+              ))}
+            </div>
 
             {userRole === 'admin' && (
                 <>
