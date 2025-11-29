@@ -65,22 +65,18 @@ export default function ResourceManagementPanel() {
     const onSubmit: SubmitHandler<ResourceFormValues> = (data) => {
         if (!firestore) return;
 
-        try {
-            if (editingResource) {
-                const resourceRef = doc(firestore, 'resources', editingResource.id);
-                updateDocumentNonBlocking(resourceRef, data);
-                toast({ title: "Sumber Daya Diperbarui", description: `Sumber daya "${data.title}" berhasil diperbarui.` });
-            } else {
-                const resourcesRef = collection(firestore, 'resources');
-                addDocumentNonBlocking(resourcesRef, data);
-                toast({ title: "Sumber Daya Ditambahkan", description: `Sumber daya "${data.title}" berhasil ditambahkan.` });
-            }
-            form.reset();
-            setDialogOpen(false);
-            setEditingResource(null);
-        } catch (error) {
-            // Non-blocking update handles its own errors
+        if (editingResource) {
+            const resourceRef = doc(firestore, 'resources', editingResource.id);
+            updateDocumentNonBlocking(resourceRef, data);
+            toast({ title: "Sumber Daya Diperbarui", description: `Sumber daya "${data.title}" berhasil diperbarui.` });
+        } else {
+            const resourcesRef = collection(firestore, 'resources');
+            addDocumentNonBlocking(resourcesRef, data);
+            toast({ title: "Sumber Daya Ditambahkan", description: `Sumber daya "${data.title}" berhasil ditambahkan.` });
         }
+        form.reset();
+        setDialogOpen(false);
+        setEditingResource(null);
     };
     
     const handleDelete = (resource: Resource) => {

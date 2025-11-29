@@ -67,27 +67,23 @@ export default function AnnouncementManagementPanel() {
     const onSubmit: SubmitHandler<AnnouncementFormValues> = (data) => {
         if (!firestore || !user) return;
 
-        try {
-            if (editingAnnouncement) {
-                const announcementRef = doc(firestore, 'announcements', editingAnnouncement.id);
-                updateDocumentNonBlocking(announcementRef, data);
-                toast({ title: "Pengumuman Diperbarui", description: `Pengumuman "${data.title}" berhasil diperbarui.` });
-            } else {
-                const announcementsRef = collection(firestore, 'announcements');
-                const newAnnouncement = {
-                    ...data,
-                    authorName: user.displayName || 'Admin',
-                    createdAt: serverTimestamp(),
-                };
-                addDocumentNonBlocking(announcementsRef, newAnnouncement);
-                toast({ title: "Pengumuman Diterbitkan", description: `Pengumuman "${data.title}" berhasil diterbitkan.` });
-            }
-            form.reset();
-            setDialogOpen(false);
-            setEditingAnnouncement(null);
-        } catch (error) {
-            // Non-blocking update handles its own errors
+        if (editingAnnouncement) {
+            const announcementRef = doc(firestore, 'announcements', editingAnnouncement.id);
+            updateDocumentNonBlocking(announcementRef, data);
+            toast({ title: "Pengumuman Diperbarui", description: `Pengumuman "${data.title}" berhasil diperbarui.` });
+        } else {
+            const announcementsRef = collection(firestore, 'announcements');
+            const newAnnouncement = {
+                ...data,
+                authorName: user.displayName || 'Admin',
+                createdAt: serverTimestamp(),
+            };
+            addDocumentNonBlocking(announcementsRef, newAnnouncement);
+            toast({ title: "Pengumuman Diterbitkan", description: `Pengumuman "${data.title}" berhasil diterbitkan.` });
         }
+        form.reset();
+        setDialogOpen(false);
+        setEditingAnnouncement(null);
     };
     
     const handleDelete = (announcement: Announcement) => {

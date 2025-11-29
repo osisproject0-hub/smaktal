@@ -63,24 +63,20 @@ export default function HouseManagementPanel() {
     const onSubmit: SubmitHandler<HouseFormValues> = (data) => {
         if (!firestore) return;
 
-        try {
-            if (editingHouse) {
-                // Update
-                const houseRef = doc(firestore, 'houses', editingHouse.id);
-                updateDocumentNonBlocking(houseRef, data);
-                toast({ title: "Rumah Diperbarui", description: `Rumah "${data.name}" berhasil diperbarui.` });
-            } else {
-                // Create
-                const housesRef = collection(firestore, 'houses');
-                addDocumentNonBlocking(housesRef, data);
-                toast({ title: "Rumah Ditambahkan", description: `Rumah "${data.name}" berhasil ditambahkan.` });
-            }
-            form.reset();
-            setDialogOpen(false);
-            setEditingHouse(null);
-        } catch (error) {
-           // Non-blocking update handles its own errors
+        if (editingHouse) {
+            // Update
+            const houseRef = doc(firestore, 'houses', editingHouse.id);
+            updateDocumentNonBlocking(houseRef, data);
+            toast({ title: "Rumah Diperbarui", description: `Rumah "${data.name}" berhasil diperbarui.` });
+        } else {
+            // Create
+            const housesRef = collection(firestore, 'houses');
+            addDocumentNonBlocking(housesRef, data);
+            toast({ title: "Rumah Ditambahkan", description: `Rumah "${data.name}" berhasil ditambahkan.` });
         }
+        form.reset();
+        setDialogOpen(false);
+        setEditingHouse(null);
     };
     
     const handleDelete = (house: House) => {
