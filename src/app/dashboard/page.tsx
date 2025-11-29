@@ -24,6 +24,7 @@ import { Crown } from 'lucide-react';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 function DashboardCardSkeleton() {
   return (
@@ -113,26 +114,26 @@ export default function DashboardOverviewPage() {
   const isLoading = isUserProfileLoading || areHousesLoading || isLeaderboardLoading || areTiersLoading;
   
   const userHouse = sortedHouses?.find((h) => h.id === userProfile?.houseId);
-  const userRank = leaderboard?.findIndex((s) => s.id === user?.uid) + 1;
+  const userRank = leaderboard && user ? leaderboard.findIndex((s) => s.id === user.uid) + 1 : undefined;
 
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:col-span-2 lg:grid-cols-2 xl:col-span-3 xl:grid-cols-4">
         {isLoading ? <DashboardCardSkeleton /> : (
-          <Card>
+          <Card className="delay-75">
             <CardHeader className="pb-2">
               <CardDescription>Poin Saya</CardDescription>
               <CardTitle className="font-headline text-4xl">{userProfile?.points || 0}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                {userRank > 0 ? `Peringkat #${userRank} di antara siswa teratas` : 'Peringkat tidak tersedia'}
+                {typeof userRank === 'number' && userRank > 0 ? `Peringkat #${userRank} di antara siswa teratas` : 'Peringkat tidak tersedia'}
               </div>
             </CardContent>
           </Card>
         )}
         {isLoading ? <DashboardCardSkeleton /> : (
-          <Card>
+          <Card className="delay-150">
             <CardHeader className="pb-2">
               <CardDescription>Rumah Saya</CardDescription>
               <CardTitle className="font-headline text-3xl flex items-center gap-2">
@@ -147,7 +148,7 @@ export default function DashboardOverviewPage() {
           </Card>
         )}
         {isLoading ? <DashboardCardSkeleton /> : (
-          <Card>
+          <Card className="delay-200">
             <CardHeader className="pb-2">
               <CardDescription>Progress Jurusan</CardDescription>
               <CardTitle className="font-headline text-4xl">{majorProgress}%</CardTitle>
@@ -158,7 +159,7 @@ export default function DashboardOverviewPage() {
           </Card>
         )}
         {isLoading ? <DashboardCardSkeleton /> : (
-          <Card>
+          <Card className="delay-300">
             <CardHeader className="pb-2">
               <CardDescription>Sertifikat Diraih</CardDescription>
               <CardTitle className="font-headline text-4xl">{certificatesEarned}</CardTitle>
@@ -187,7 +188,7 @@ export default function DashboardOverviewPage() {
                 </TableHeader>
                 <TableBody>
                   {sortedHouses?.map((house, index) => (
-                    <TableRow key={house.id} className={house.id === userProfile?.houseId ? "bg-accent" : ""}>
+                    <TableRow key={house.id} className={cn(house.id === userProfile?.houseId ? "bg-accent" : "", "animate-fade-in delay-[calc(30ms*var(--i))]") } style={{ ['--i' as any]: index }}>
                       <TableCell>
                         <div className="font-medium flex items-center justify-center h-8 w-8 rounded-full bg-muted">
                           {index === 0 ? <Crown className="h-5 w-5 text-yellow-500" /> : index + 1}
@@ -229,8 +230,8 @@ export default function DashboardOverviewPage() {
                 <TableBody>
                   {leaderboard?.map((student, index) => {
                     const studentHouse = houses?.find(h => h.id === student.houseId);
-                    return (
-                      <TableRow key={student.id} className={student.id === user?.uid ? "bg-accent" : ""}>
+                      return (
+                      <TableRow key={student.id} className={cn(student.id === user?.uid ? "bg-accent" : "", "animate-fade-in")} style={{ ['--i' as any]: index }}>
                         <TableCell className="font-medium text-center">{index + 1}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">

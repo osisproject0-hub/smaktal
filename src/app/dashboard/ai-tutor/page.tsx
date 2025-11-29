@@ -37,7 +37,7 @@ export default function AITutorPage() {
   return (
     <div className="grid gap-8 md:grid-cols-3">
       <div className="md:col-span-1">
-        <Card>
+        <Card className="delay-75">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">AI Tutor Cerdas</CardTitle>
             <CardDescription>
@@ -80,31 +80,31 @@ export default function AITutorPage() {
       </div>
 
       <div className="md:col-span-2">
-        <Card className="min-h-[400px]">
+        <Card className="min-h-[400px] delay-150">
           <CardHeader>
             <CardTitle>Rencana Belajar Anda</CardTitle>
             <CardDescription>Berikut adalah rekomendasi dan bantuan dari AI Tutor.</CardDescription>
           </CardHeader>
           <CardContent>
             {!state && (
-                <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-64">
-                    <Bot className="h-12 w-12 mb-4"/>
-                    <p>Hasil akan ditampilkan di sini.</p>
-                </div>
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-64 animate-fade-in">
+                <Bot className="h-12 w-12 mb-4 motion-safe:transition-transform motion-safe:duration-400 hover:rotate-3"/>
+                <p>Hasil akan ditampilkan di sini.</p>
+              </div>
             )}
-            {state?.error && (
-                <Alert variant="destructive">
-                    <AlertTitle>Terjadi Kesalahan</AlertTitle>
-                    <AlertDescription>{state.error}</AlertDescription>
-                </Alert>
+            {state && 'error' in state && (
+              <Alert variant="destructive">
+                <AlertTitle>Terjadi Kesalahan</AlertTitle>
+                <AlertDescription>{(state as any).error}</AlertDescription>
+              </Alert>
             )}
-            {state?.recommendations && (
+            {state && 'recommendations' in state && (
                 <div className="space-y-6">
                     <div>
                         <h3 className="font-headline text-lg mb-2 flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary"/> Rekomendasi Materi</h3>
                         <ul className="space-y-2 list-inside">
-                            {state.recommendations.map((rec, index) => (
-                                <li key={index} className="flex items-start gap-3 p-2 rounded-md hover:bg-muted">
+                            {(state as any).recommendations.map((rec: string, index: number) => (
+                              <li key={index} className="flex items-start gap-3 p-2 rounded-md hover:bg-muted animate-fade-in" style={{ transitionDelay: `${index * 60}ms` }}>
                                     {rec.toLowerCase().includes('video') ? <Video className="h-4 w-4 mt-1 text-red-600"/> : <FileText className="h-4 w-4 mt-1 text-blue-600"/>}
                                     <a href="#" className="text-sm text-primary hover:underline" onClick={(e) => e.preventDefault()}>{rec}</a>
                                 </li>
@@ -114,7 +114,7 @@ export default function AITutorPage() {
                     <div>
                          <h3 className="font-headline text-lg mb-2 flex items-center gap-2"><Bot className="h-5 w-5 text-primary"/> Bantuan Tambahan</h3>
                          <Alert>
-                            <AlertDescription>{state.assistance}</AlertDescription>
+                           <AlertDescription>{(state as any).assistance}</AlertDescription>
                          </Alert>
                     </div>
                 </div>

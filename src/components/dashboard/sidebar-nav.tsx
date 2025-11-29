@@ -44,19 +44,19 @@ export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
   const renderLink = (item: any) => {
     const isActive = pathname === item.href;
     const linkClass = cn(
-      'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
+      'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all motion-safe:transform-gpu hover:text-primary',
       isActive && 'bg-muted text-primary',
       item.disabled && 'cursor-not-allowed opacity-50'
     );
-     const mobileLinkClass = cn(
-      'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
+    const mobileLinkClass = cn(
+      'flex items-center gap-4 px-2.5 text-muted-foreground motion-safe:transform-gpu hover:text-foreground',
       isActive && 'text-foreground',
       item.disabled && 'cursor-not-allowed opacity-50'
     );
 
     const linkContent = (
       <>
-        <item.icon className="h-4 w-4" />
+        <item.icon className="h-4 w-4 transition-transform motion-safe:duration-200 group-hover:scale-110" />
         {item.label}
       </>
     );
@@ -72,6 +72,8 @@ export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
 
     return (
       <Link href={item.href} className={isMobile ? mobileLinkClass : linkClass}>
+        {/* active indicator */}
+        <span className={cn('mr-2 w-1 h-6 rounded-r-md bg-transparent transition-colors', isActive && 'bg-primary')} />
         {linkContent}
       </Link>
     );
