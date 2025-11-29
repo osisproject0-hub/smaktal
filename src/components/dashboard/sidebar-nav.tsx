@@ -61,17 +61,17 @@ export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
   if (isMobile) {
     return (
         <>
-            {navItems.map(renderLink)}
-            {otherItems.map(renderLink)}
+            {navItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
+            {otherItems.map((item) => <React.Fragment key={item.label}>{renderLink(item)}</React.Fragment>)}
         </>
     )
   }
 
   return (
     <div className="grid items-start px-4 text-sm font-medium">
-      {navItems.map(renderLink)}
+      {navItems.map((item) => <React.Fragment key={item.href}>{renderLink(item)}</React.Fragment>)}
       <h3 className="mb-2 mt-6 px-3 text-xs font-semibold text-muted-foreground/80 tracking-wider">PROYEK</h3>
-      {otherItems.map(renderLink)}
+      {otherItems.map((item) => <React.Fragment key={item.label}>{renderLink(item)}</React.Fragment>)}
     </div>
   );
 }
