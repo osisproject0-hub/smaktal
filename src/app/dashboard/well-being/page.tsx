@@ -33,7 +33,10 @@ export default function WellbeingPage() {
     if (selectedMood && user && firestore) {
       setIsSubmitting(true);
       const moodData = moodOptions.find(m => m.mood === selectedMood);
-      if (!moodData) return;
+      if (!moodData) {
+        setIsSubmitting(false);
+        return;
+      };
 
       const checkIn = {
         mood: moodData.score,
@@ -43,22 +46,24 @@ export default function WellbeingPage() {
 
       const collectionRef = collection(firestore, `users/${user.uid}/wellBeing`);
       
-      try {
-        await addDocumentNonBlocking(collectionRef, checkIn);
-        toast({
-          title: 'Check-in Berhasil',
-          description: `Terima kasih telah berbagi perasaan Anda hari ini. Mood Anda: ${selectedMood}.`,
+      addDocumentNonBlocking(collectionRef, checkIn)
+        .then(() => {
+            toast({
+              title: 'Check-in Berhasil',
+              description: `Terima kasih telah berbagi perasaan Anda hari ini. Mood Anda: ${selectedMood}.`,
+            });
+            setSelectedMood(null);
+        })
+        .catch(() => {
+           toast({
+              title: 'Gagal',
+              description: 'Gagal mengirim check-in. Coba lagi.',
+              variant: 'destructive',
+            });
+        })
+        .finally(() => {
+            setIsSubmitting(false);
         });
-        setSelectedMood(null);
-      } catch (error) {
-        toast({
-          title: 'Gagal',
-          description: 'Gagal mengirim check-in. Coba lagi.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
     }
   };
   

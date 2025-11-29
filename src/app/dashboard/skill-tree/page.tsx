@@ -1,9 +1,9 @@
 'use client';
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { cn } from '@/lib/utils';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { CheckCircle2, Lock, GitBranch, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -27,9 +27,13 @@ function SkillTierSkeleton() {
 
 export default function SkillTreePage() {
   const firestore = useFirestore();
+  const { user } = useUser();
+
+  const userProfileRef = useMemoFirebase(() => user ? doc(firestore, `users/${user.uid}/profile`, user.uid) : null, [user, firestore]);
+  const { data: userProfile, isLoading: isUserProfileLoading } = useDoc(userProfileRef);
 
   // In a real app, this would be dynamic based on the user's major
-  const skillTreeName = 'Teknik Komputer & Jaringan'; 
+  const skillTreeName = userProfile?.jurusan || 'Teknik Komputer & Jaringan'; 
 
   const tiersQuery = useMemoFirebase(
     () => query(collection(firestore, 'skillTrees/tkj/tiers'), orderBy('order')),
@@ -37,20 +41,20 @@ export default function SkillTreePage() {
   );
   const { data: tiers, isLoading: isLoadingTiers } = useCollection(tiersQuery);
 
-  // In a real app, user's unlocked skills would be fetched from their profile
-  const unlockedSkills = new Set(['sk01', 'sk02', 'sk03', 'sk05']);
+  const unlockedSkills = new Set(userProfile?.unlockedSkills || []);
+  const isLoading = isLoadingTiers || isUserProfileLoading;
 
   return (
     <div>
       <div className="mb-8">
         <h1 className="font-headline text-3xl md:text-4xl">Pohon Keahlian</h1>
-        {isLoadingTiers ? (
+        {isLoading ? (
           <Skeleton className="h-5 w-64 mt-2" />
         ) : (
           <p className="text-muted-foreground">Jalur pembelajaran Anda di jurusan {skillTreeName}.</p>
         )}
       </div>
-      {isLoadingTiers ? (
+      {isLoading ? (
          <div className="space-y-8">
             <SkillTierSkeleton />
             <SkillTierSkeleton />
