@@ -86,7 +86,7 @@ export default function AnnouncementManagementPanel() {
             setDialogOpen(false);
             setEditingAnnouncement(null);
         } catch (error) {
-            console.error("Error saving announcement: ", error);
+            // Non-blocking update handles its own errors
         }
     };
     
@@ -95,7 +95,7 @@ export default function AnnouncementManagementPanel() {
         const announcementRef = doc(firestore, 'announcements', announcement.id);
         deleteDocumentNonBlocking(announcementRef);
         toast({ title: "Pengumuman Dihapus", description: `Pengumuman "${announcement.title}" telah dihapus.`, variant: 'destructive' });
-    }
+    };
 
     return (
         <Card>
@@ -120,7 +120,7 @@ export default function AnnouncementManagementPanel() {
                                     <FormItem><FormLabel>Judul</FormLabel><FormControl><Input placeholder="Judul pengumuman..." {...field} /></FormControl><FormMessage /></FormItem>
                                 )}/>
                                 <FormField control={form.control} name="content" render={({ field }) => (
-                                    <FormItem><FormLabel>Isi Pengumuman</FormLabel><FormControl><Textarea placeholder="Tulis isi pengumuman di sini..." {...field} rows={5} /></FormControl><FormMessage /></FormMessage>
+                                    <FormItem><FormLabel>Isi Pengumuman</FormLabel><FormControl><Textarea placeholder="Tulis isi pengumuman di sini..." {...field} rows={5} /></FormControl><FormMessage /></FormItem>
                                 )}/>
                                 <DialogFooter>
                                     <DialogClose asChild><Button variant="outline">Batal</Button></DialogClose>

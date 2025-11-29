@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/componentsui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -79,7 +79,7 @@ export default function ResourceManagementPanel() {
             setDialogOpen(false);
             setEditingResource(null);
         } catch (error) {
-            console.error("Error saving resource: ", error);
+            // Non-blocking update handles its own errors
         }
     };
     
@@ -88,7 +88,7 @@ export default function ResourceManagementPanel() {
         const resourceRef = doc(firestore, 'resources', resource.id);
         deleteDocumentNonBlocking(resourceRef);
         toast({ title: "Sumber Daya Dihapus", description: `Sumber daya "${resource.title}" telah dihapus.`, variant: 'destructive' });
-    }
+    };
 
     return (
         <Card>

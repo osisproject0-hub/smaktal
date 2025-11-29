@@ -79,7 +79,7 @@ export default function HouseManagementPanel() {
             setDialogOpen(false);
             setEditingHouse(null);
         } catch (error) {
-            console.error("Error saving house: ", error);
+           // Non-blocking update handles its own errors
         }
     };
     
@@ -88,7 +88,7 @@ export default function HouseManagementPanel() {
         const houseRef = doc(firestore, 'houses', house.id);
         deleteDocumentNonBlocking(houseRef);
         toast({ title: "Rumah Dihapus", description: `Rumah "${house.name}" telah dihapus.`, variant: 'destructive' });
-    }
+    };
 
     return (
         <Card>
