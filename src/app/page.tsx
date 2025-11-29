@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/icons';
 import { useAuth, useUser } from '@/firebase';
-import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Users, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -23,7 +23,14 @@ export default function LoginPage() {
   const handleSignIn = async () => {
     if (auth) {
       const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
+      try {
+        await signInWithPopup(auth, provider);
+        // After successful popup sign-in, the onAuthStateChanged listener
+        // in the Firebase provider will detect the user and trigger the redirect.
+      } catch (error) {
+        console.error("Google Sign-In Error:", error);
+        // Optionally, show a toast notification to the user about the error.
+      }
     }
   };
 
