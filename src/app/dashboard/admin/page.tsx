@@ -25,9 +25,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc } from 'firebase/firestore';
-import { Shield, ShieldOff, Loader2 } from 'lucide-react';
+import { Shield, ShieldOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 function UserTableSkeleton() {
@@ -35,9 +36,9 @@ function UserTableSkeleton() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>User</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead>Pengguna</TableHead>
+          <TableHead>Peran</TableHead>
+          <TableHead className="text-right w-[150px]">Ubah Peran</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -65,7 +66,6 @@ function UserTableSkeleton() {
   );
 }
 
-
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
@@ -82,16 +82,11 @@ export default function AdminPage() {
   const handleRoleChange = (userId: string, newRole: string) => {
     if (!firestore) return;
     const targetUserRef = doc(firestore, 'users', userId);
-    updateDocumentNonBlocking(targetUserRef, { role: newRole })
-      .then(() => {
-        toast({
-          title: 'Peran Diperbarui',
-          description: `Peran untuk pengguna telah berhasil diubah menjadi ${newRole}.`,
-        });
-      })
-      .catch((error: any) => {
-        // Error already handled globally
-      });
+    updateDocumentNonBlocking(targetUserRef, { role: newRole });
+    toast({
+      title: 'Peran Diperbarui',
+      description: `Peran untuk pengguna telah berhasil diubah menjadi ${newRole}.`,
+    });
   };
 
   if (isLoading) {
@@ -102,7 +97,7 @@ export default function AdminPage() {
           <CardDescription>Mengubah peran dan mengelola pengguna di seluruh sistem.</CardDescription>
         </CardHeader>
         <CardContent>
-            <UserTableSkeleton />
+          <UserTableSkeleton />
         </CardContent>
       </Card>
     );
@@ -154,8 +149,8 @@ export default function AdminPage() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Select 
-                    defaultValue={u.role} 
+                  <Select
+                    defaultValue={u.role}
                     onValueChange={(newRole) => handleRoleChange(u.id, newRole)}
                     disabled={u.id === user?.uid} // Admin can't change their own role
                   >
