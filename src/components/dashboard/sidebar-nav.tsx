@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,6 @@ import {
   Shield,
 } from 'lucide-react';
 import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { motion } from 'framer-motion';
 import { doc } from 'firebase/firestore';
 
 const navItems = [
@@ -75,7 +75,9 @@ export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
       <Link href={item.href} className={isMobile ? mobileLinkClass : linkClass}>
         {/* active indicator */}
         <span className={cn('mr-2 w-1 h-6 rounded-r-md bg-transparent transition-colors', isActive && 'bg-primary')} />
-        {linkContent}
+        <motion.span whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className="flex items-center gap-3">
+          {linkContent}
+        </motion.span>
       </Link>
     );
   }

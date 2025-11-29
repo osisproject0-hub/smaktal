@@ -37,7 +37,7 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full motion-safe:transform-gpu motion-safe:transition-transform motion-safe:duration-150 hover:scale-105">
           <Avatar className="h-9 w-9">
             {user.photoURL && (
               <AvatarImage
