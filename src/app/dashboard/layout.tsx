@@ -3,7 +3,7 @@ import React from 'react';
 import { SidebarNav } from '@/components/dashboard/sidebar-nav';
 import { UserNav } from '@/components/dashboard/user-nav';
 import { Logo } from '@/components/icons';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { PanelLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -52,6 +52,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
+               <SheetHeader>
+                  <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
+                </SheetHeader>
               <nav className="grid gap-6 text-lg font-medium">
                 <Link
                   href="/dashboard"
