@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useActionState, useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -24,7 +24,7 @@ function SubmitButton() {
 }
 
 export default function AITutorPage() {
-  const [state, formAction] = useActionState(getLearningPlan, null);
+  const [state, formAction] = useFormState(getLearningPlan, null);
   const [topic, setTopic] = useState('');
   const firestore = useFirestore();
 
